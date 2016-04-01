@@ -1,12 +1,12 @@
 ###Instructions
 
-1. New firebase app
+###1- New firebase app
 1-- setup endpoint `userSecrets: "" `
 2-- configure authentication in 'Login & Auth' : 'Enable Email And Password Auth'
 
-2. npm installs  --- jquery, underscore, bbfire, firebase, bbfire
+###2- npm installs  --- jquery, underscore, bbfire, firebase, bbfire
 
-3. setup router for authentication
+###3- setup router for authentication
 ```js
 
 var AppRouter = BackboneFire.Router.extend({
@@ -32,11 +32,11 @@ var AppRouter = BackboneFire.Router.extend({
 })
 ```
 
-4. setup viewController React components
+###4- setup viewController React components
 - ShowSecrets
 - ViewController_Authenticate
 
-5. Create `_handleSignUp` to gather info off form
+###5- Create `_handleSignUp` to gather info off form
 
 **Part 1--- capture form-values and createUser with Fb Auth**
 ```js
@@ -76,7 +76,7 @@ function(err, authData){
 ```
 
 
-5. Create `_handleLogin` to gather info off form
+###5- Create `_handleLogin` to gather info off form
 ```js
 evt.preventDefault()
 
@@ -97,7 +97,7 @@ fbRef.authWithPassword({
 })
 ```
 
-6. catch auth status in router
+###6- catch auth status in router
 ```js
 initialize: function(){
   var rtr = this
@@ -116,7 +116,7 @@ initialize: function(){
 }
 ```
 
-7. Configure `showHome`
+###7- Configure `showHome`
 ---showHome
 ```
 showHome: function(){
@@ -131,7 +131,7 @@ showHome: function(){
 },
 ```
 
-8. Configure HomeView
+###8- Configure HomeView
 --1 Put Props On State
 ```
 getInitialState: function(){
@@ -182,6 +182,7 @@ componentDidMount: function(){
  },
 ```
 
-  
+
+###9- Logout
 
   

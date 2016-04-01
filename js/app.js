@@ -79,6 +79,11 @@ var HomeView = React.createClass({
     })
   },
 
+  _handleLogout: function(){
+    fbRef.unauth()
+    appRtr.navigate('login',{trigger: true})
+  },  
+
   render: function(){
     // return (
     //   <div id="secrets-view">
@@ -104,14 +109,12 @@ var HomeView = React.createClass({
     return (
       <div id="secrets-view">
         <h1>The Secrets</h1>
+        <button onClick={this._handleLogout}>LogOut</button>
         <ul>
           {this.state.userSecretColl.models.map(component._generateSecretsJSX)}
         </ul>
       </div>
     )
-
-
-
   }
 })
 
@@ -229,6 +232,7 @@ var AppRouter = BackboneFire.Router.extend({
         console.log('user is SO authenticated!')
         rtr.authenticatedUser = authData.uid
       } else {
+        console.log('NO user authenticated')
         rtr.authenticatedUser = null
       }
     })
