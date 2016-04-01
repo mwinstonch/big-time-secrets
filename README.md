@@ -1,104 +1,187 @@
-# Universal JS Boilerplate
+###Instructions
 
-> **WARNING** This version of Universal JS Boilerplate uses Babel v6, which is **UNDER ACTIVE DEVELOPMENT**. The plugin system currently has a lot of issues, and the Babel v6 presets for ES2015/ES7 features are having a few difficulties as of Nov 6th, 2015. Noted among the currently non-working features are static and non-static class properties, decorators, and the destructuring of complex objects in function arguments.
+1. New firebase app
+1-- setup endpoint `userSecrets: "" `
+2-- configure authentication in 'Login & Auth' : 'Enable Email And Password Auth'
 
-This is a scaffolding project that includes boilerplate code for:
+2. npm installs  --- jquery, underscore, bbfire, firebase, bbfire
 
-- Node
-- Heroku configuration
-- Babel, Babel runtime, ES6/2015, ES7/2016
-- Node-sass, some example SCSS, grids, normalize and typeplate css kits (installed from bower)
-- Example files/resources
-- An example .gitignore for the project
-- A host of npm scripts for watching and building your files
-- Documentation and testing scaffolds
+3. setup router for authentication
+```js
 
-# Major Changes
+var AppRouter = BackboneFire.Router.extend({
+  routes: {
+    "*home": 'showHome'
+  },
 
-## V2.0 - Koa v2 is now the serverside library handling requests
 
-This Koa v2 code has some default code setup for hosting code over HTTPS, as well as taking advantage of the SPDY & HTTP/2 protocols for even faster content delivery. Here's an overview of the features:
+  showHome: function(){
+      DOM.render(<p>Welcom Home!</p>, document.querySelector('.container'))
+  },
 
-* Socket.io support with sticky-sessions (for HAProxy)
-* Clustering with the cluster module
-* Smart header support for ETags and conditional gets
-* Gzip compression on responses
-* Signed, cookie-based sessions
-* Request logging (morgan)
-* Static file serving
-* Favicon middleware
-* HTTP/2 and SPDY over TLS
-* Routing with async or sync routes (via Koa itself)
-* Support for Koa 1.0 and 2.0 middleware with koa-adapter
+  showAuthPage: function(){
+      DOM.render(<p>Authenticate Please! </p>,document.querySelector('.container'))
+  },
 
-More info about Koa v2 here: https://github.com/koajs/koa/tree/v2.x
+  initialize: function(){
+    console.log('app routing')
+    authenticatedUser = null
+    BackboneFire.history.start();
+  }
 
-# Getting Started
+})
+```
 
-1. Start your own project folder with a git clone, and if you plan to push this clone to GitHub, you'll need to change your origin:
+4. setup viewController React components
+- ShowSecrets
+- ViewController_Authenticate
 
-    ```sh
-    cd ~/Github\ Projects/
-    git clone git@github.com:matthiasak/universal-js-boilerplate.git NEWPROJECT
-    cd NEWPROJECT
-    git remote remove origin
-    git remote add origin YOUR_SSH_ADDRESS
-    ```
+5. Create `_handleSignUp` to gather info off form
 
-2. Install prerequisites
+**Part 1--- capture form-values and createUser with Fb Auth**
+```js
+var evt = evt
+evt.preventDefault()
 
-    ```sh
-    npm install
-    ```
+var emailInput    = evt.currentTarget.email.value
+var pwInput       = evt.currentTarget.password.value
+var userNameInput = evt.currentTarget.username.value
+var secretInput   = evt.currentTarget.secret.value
 
-3. Start your server:
+fbRef.createUser(
+  {
+    email    : evt.currentTarget.email.value,  // internal to fb
+    password : evt.currentTarget.password.value //internal to fb
+  }...)
+```
 
-    ```sh
-    npm start
+**Part 2--- handle response and save 'secret' To DB**
+```js
+function(err, authData){
+        //create user secret
+        var userSecretsColl = new UserSecretsColl(fbRef);
+         userSecretsColl.create({
+           username: userNameInput,
+           theSecret: secretInput,
+           uid: authData.uid
+         })
+      ...)
+}
+```
 
-    # Alternatively, if doing server-side work
-    # npm run start:n
-    ```
+**Part 3--- notify application of authenticated user**
+```js
+     appRtr.authenticatedUser = authData.uid
+     appRtr.navigate('',{trigger: true})
+```
 
-4. Ready to push your code to heroku?
 
-    ```sh
-    git commit -am "Let's do this"
-    heroku create <my app name>
-    git push heroku HEAD:master
-    ```
+5. Create `_handleLogin` to gather info off form
+```js
+evt.preventDefault()
 
-5. Or are you pushing to gh-pages instead?
+var emailInput = evt.currentTarget.email.value
+var pwInput = evt.currentTarget.password.value
 
-    ```sh
-    npm run publish:gh-pages
-    ```
+fbRef.authWithPassword({
+  email: emailInput,
+  password: pwInput
+}, function(err, authData){
+  console.log(authData)
+  if(err){
+    alert('sorry credentials not valid!')
+  } else{
+    // appRtr.initialize will be listening for changes in auth status!
+    appRtr.navigate('', {trigger: true})
+  }
+})
+```
 
-6. Or are you using [surge.sh](http://surge.sh)?
+6. catch auth status in router
+```js
+initialize: function(){
+  var rtr = this
 
-    ```sh
-    npm run publish:surge
-    # you may be prompted to login or signup,
-    # and then you'll be asked what URL to push to on surge.sh
-    ```
+  // this.authenticatedUser = null
+  
+  fbRef.onAuth(function(authData){
+    console.log('auth stuff herrrd', authData)
+    if(authData){
+      console.log('user is SO authenticated!')
+      rtr.authenticatedUser = authData.uid
+    } else {
+      rtr.authenticatedUser = null
+    }
+  })
+}
+```
 
-    > Note: you can teardown a surge.sh URL with `npm run teardown`, which will prompt you for the URL to bring down
+7. Configure `showHome`
+---showHome
+```
+showHome: function(){
+    if(!this.authenticatedUser){
+      this.navigate('authenticate', {trigger: true})
+      return 
+    }
 
-7. Want to generate your own documentation with [esdocs](https://github.com/esdoc/esdoc)?
+    var theSecrets = new UserSecretsColl(fbRef)
 
-    ```sh
-    # build docs and open locally
-    npm run docs
-    open dist/esdoc/index.html
-    # or build AND publish to gh-pages or to surge
-    npm run docs:gh-pages
-    npm run docs:surge
-    ```
+    DOM.render(<HomeView userSecrets={theSecrets}/>, document.querySelector('.container'))
+},
+```
 
-8. Need shields?
+8. Configure HomeView
+--1 Put Props On State
+```
+getInitialState: function(){
+  return { userSecretColl: this.props.userSecrets }
 
-    http://shields.io/
+}
+```
 
-# License
+--2 Build the Render Method
+```
+render: function(){
 
-MIT.
+    return (
+      <div id="secrets-view">
+        <h1>The Secrets</h1>
+        <ul>
+          {this.state.userSecretColl.models.map(component._generateSecretsJSX)}
+        </ul>
+      </div>
+    )
+  }  
+```
+
+--3 Build the Helper Method
+```
+  _generateSecretsJSX: function(mdl,i){
+    if(!mdl.get('theSecret')) return ''
+    return (
+      <li key={i}>
+        <span className="usr">{mdl.get('username')}</span>
+        --
+        <span className="usr-secret">{mdl.get('theSecret')}</span>
+      </li>
+    )
+  },
+```
+
+--4 Build the Data syncer
+```
+componentDidMount: function(){
+   var component = this
+   this.props.userSecrets.on('sync', function(){
+     console.log("SEEECRETS:", component.props.userSecrets.models)
+     component.setState({
+       userSecretColl: component.props.userSecrets
+     })
+   })
+ },
+```
+
+  
+
+  

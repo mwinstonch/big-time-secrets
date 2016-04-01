@@ -1,6 +1,3 @@
-@import "../bower_components/normalize-scss/_normalize.scss";
-@import "../bower_components/typeplate-starter-kit/scss/_typeplate.scss";
-
 p+p {
     text-indent: 0;
     margin-top: 0;
@@ -127,3 +124,43 @@ body {
 /**
  * App code
  */
+
+
+form {
+    textarea{ width: 100%}
+
+    .signup{padding: 10px; background: #F4B350}
+    .signin{padding: 10px; background: #65C6BB}
+}
+
+#secrets-view{
+    h1 {
+        color: rgba(192, 57, 43, 1.0);
+        border-bottom: 1px solid rgba(150, 40, 27, 1.0);
+    }
+    ul {
+        li {
+            list-style-type: none;
+            margin: 30px;
+        }
+
+        .usr {
+            background: #D35400;
+            color: #fff;
+            padding: 10px;
+            font-size: 21px;
+            margin: 10px;
+        }
+
+        .usr-secret{
+            color: rgba(192, 57, 43, 1.0);
+            opacity: .7;
+            font-style: italic;
+
+        }
+    }
+}
+
+
+
+
